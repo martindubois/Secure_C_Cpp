@@ -13,10 +13,16 @@
 #include <assert.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // ===== Common =============================================================
 #include "../Common/Protocol.h"
 #include "../Common/Socket.h"
+
+#ifndef _WIN32
+    #include "../Common/WindowsOnLinux.h"
+#endif
 
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
@@ -63,7 +69,7 @@ int main()
     int lResult = bind(sSocket, reinterpret_cast<sockaddr*>(&lAddr), sizeof(lAddr));
     if (0 == lResult)
     {
-        int lAddrSize_byte = sizeof(lAddr);
+        socklen_t lAddrSize_byte = sizeof(lAddr);
 
         getsockname(sSocket, reinterpret_cast<sockaddr*>(&lAddr), &lAddrSize_byte);
 
@@ -126,7 +132,7 @@ int ProcessRequest(SOCKET aSocket, Protocol_Header* aHeader, unsigned int aSize_
 int ReceiveAndProcessRequest(SOCKET aSocket)
 {
     sockaddr_in      lAddr;
-    int              lAddrSize_byte = sizeof(lAddr);
+    socklen_t        lAddrSize_byte = sizeof(lAddr);
     char             lBuffer[1024];
     Protocol_Header* lHeader = reinterpret_cast<Protocol_Header*>(lBuffer);
 

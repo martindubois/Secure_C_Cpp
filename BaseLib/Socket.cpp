@@ -8,6 +8,7 @@
 
 // ===== C ==================================================================
 #include <stdio.h>
+#include <unistd.h>
 
 // ===== Common =============================================================
 #include "../Common/Socket.h"
@@ -17,30 +18,45 @@
 
 void Socket_Close(SOCKET aSocket)
 {
-    int lRet = closesocket(aSocket);
+    int lRet;
+
+    #ifdef _WIN32
+        lRet = closesocket(aSocket);
+    #else
+        lRet = close(aSocket);
+    #endif
+
     if (0 != lRet)
     {
-        fprintf(stderr, "WARNING  closesocket(  )  failed - %d\n", lRet);
+        fprintf(stderr, "WARNING  close(  )  or  closesocket(  )  failed - %d\n", lRet);
     }
 }
 
 void Socket_Startup()
 {
-    WSADATA lWS;
+    #ifdef _WIN32
 
-    int lRet = WSAStartup(MAKEWORD(2, 2), &lWS);
-    if (0 != lRet)
-    {
-        fprintf(stderr, "FATAL ERROR  WSAStartup( ,  )  failed - %d\n", lRet);
-        exit(__LINE__);
-    }
+        WSADATA lWS;
+
+        int lRet = WSAStartup(MAKEWORD(2, 2), &lWS);
+        if (0 != lRet)
+        {
+            fprintf(stderr, "FATAL ERROR  WSAStartup( ,  )  failed - %d\n", lRet);
+            exit(__LINE__);
+        }
+
+    #endif
 }
 
 void Socket_Cleanup()
 {
-    int lRet = WSACleanup();
-    if (0 != lRet)
-    {
-        fprintf(stderr, "WARNING  WSACleanup()  failed - %d\n", lRet);
-    }
+    #ifdef _WIN32
+
+        int lRet = WSACleanup();
+        if (0 != lRet)
+        {
+            fprintf(stderr, "WARNING  WSACleanup()  failed - %d\n", lRet);
+        }
+
+    #endif
 }

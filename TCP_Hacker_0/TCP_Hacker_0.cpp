@@ -12,6 +12,8 @@
 // ===== C ==================================================================
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // ===== Common =============================================================
 #include "../Common/Dump.h"
@@ -69,7 +71,7 @@ int main(int aCount, const char** aVector)
     lHeader->mSerial      = 1;
     lHeader->mSize_byte   = sizeof(lBuffer);
 
-    strcpy_s(lBuffer + sizeof(Protocol_Header), sizeof(lBuffer) - sizeof(Protocol_Header), "Very important data 0123456789abcdefghijklmnopqrstuvwxy");
+    strcpy_s(lBuffer + sizeof(Protocol_Header) SIZE_INFO( sizeof(lBuffer) - sizeof(Protocol_Header) ), "Very important data 0123456789abcdefghijklmnopqrstuvwxy");
 
     Request(lBuffer, sizeof(lBuffer), lAddr);
 

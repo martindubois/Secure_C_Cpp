@@ -4,8 +4,11 @@
 # File           .gitignore
 
 /.vs/
+/Binaries/
+/Libraries/
 
 Debug/
 Release/
 
+*.o
 *.vcxproj.user

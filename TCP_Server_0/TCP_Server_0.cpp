@@ -12,6 +12,7 @@
 // ===== C ==================================================================
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 // ===== Common =============================================================
 #include "../Common/Protocol.h"
@@ -50,7 +51,7 @@ int main()
         lResult = listen(lSocket, 1);
         if (0 == lResult)
         {
-            int lAddrSize_byte = sizeof(lAddr);
+            socklen_t lAddrSize_byte = sizeof(lAddr);
 
             getsockname(lSocket, reinterpret_cast<sockaddr*>(&lAddr), &lAddrSize_byte);
 
@@ -115,7 +116,7 @@ int ReceiveAndProcessRequest(SOCKET aSocket)
     assert(INVALID_SOCKET != aSocket);
 
     sockaddr_in lAddr;
-    int         lAddrSize_byte = sizeof(lAddr);
+    socklen_t   lAddrSize_byte = sizeof(lAddr);
 
     SOCKET lSocket = accept(aSocket, reinterpret_cast<sockaddr *>(&lAddr), &lAddrSize_byte);
     if (INVALID_SOCKET == lSocket)

@@ -47,7 +47,7 @@ int main(int aCount, const char** aVector)
 
 	if (ARG_OFFSET < aCount)
 	{
-		* reinterpret_cast<void **>(lB + atoi(aVector[ARG_OFFSET])) = OtherFunction;
+		* reinterpret_cast<void **>(lB + atoi(aVector[ARG_OFFSET])) = reinterpret_cast<void *>(OtherFunction);
 	}
 
 	Dump(lB - (BUFFER_SIZE_byte * 12), BUFFER_SIZE_byte * 25, BUFFER_SIZE_byte, -(BUFFER_SIZE_byte * 12));

@@ -12,6 +12,7 @@
 // ===== C ==================================================================
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 // ===== Common =============================================================
 #include "../Common/Protocol.h"
@@ -46,7 +47,7 @@ int main()
     int lResult = bind(lSocket, reinterpret_cast<sockaddr*>(&lAddr), sizeof(lAddr));
     if (0 == lResult)
     {
-        int lAddrSize_byte = sizeof(lAddr);
+        socklen_t lAddrSize_byte = sizeof(lAddr);
 
         getsockname(lSocket, reinterpret_cast<sockaddr*>(&lAddr), &lAddrSize_byte);
 
@@ -97,7 +98,7 @@ int ProcessRequest(SOCKET aSocket, Protocol_Header* aHeader, unsigned int aSize_
 int ReceiveAndProcessRequest(SOCKET aSocket)
 {
     sockaddr_in      lAddr;
-    int              lAddrSize_byte = sizeof(lAddr);
+    socklen_t        lAddrSize_byte = sizeof(lAddr);
     char             lBuffer[1024];
     Protocol_Header* lHeader = reinterpret_cast<Protocol_Header*>(lBuffer);
 
