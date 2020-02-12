@@ -123,9 +123,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{65891C98-947C-4D8B-9EAD-032A129912A4}"
 	ProjectSection(SolutionItems) = preProject
 		Common\Dump.h = Common\Dump.h
+		Common\LinuxOnWindows.h = Common\LinuxOnWindows.h
 		Common\Protocol.h = Common\Protocol.h
 		Common\Socket.h = Common\Socket.h
 		Common\Verify.h = Common\Verify.h
+		Common\WindowsOnLinux.h = Common\WindowsOnLinux.h
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{62212D55-7208-4EE4-BDB9-D1F8462AF78D}"
