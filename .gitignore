@@ -1,0 +1,11 @@
+
+# Author         Martin Dubois, P.Eng.
+# Learning path  Secure C/C++
+# File           .gitignore
+
+/.vs/
+
+Debug/
+Release/
+
+*.vcxproj.user

@@ -1,0 +1,2 @@
+GET www.amazon.ca/Product/4598/Data.xml
+Product/4598/Data.xml

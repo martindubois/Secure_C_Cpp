@@ -1,0 +1,5 @@
+GET 209.188.154.11/Data/Toto.xml
+Data/Toto.xml
+POST 112.89.156.14/Data/Toto.xml
+Data/Toto.xml
+END
