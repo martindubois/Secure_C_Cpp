@@ -100,10 +100,10 @@ int ProcessFile(FILE* aFile)
 
     while (0 == lResult)
     {
-        char lAddress[64];
-        char lCommand[64];
+        char lAddress [64];
+        char lCommand [64];
         char lFileName[64];
-        char lLine[64];
+        char lLine    [64];
 
         if (NULL == fgets(lLine, sizeof(lLine), aFile))
         {
@@ -111,7 +111,13 @@ int ProcessFile(FILE* aFile)
             return __LINE__;
         }
 
-        if (2 != sscanf_s(lLine, "%s %s", lCommand, sizeof(lCommand), lAddress, sizeof(lAddress)))
+        int lRet = sscanf_s(lLine, "%s %s", lCommand, sizeof(lCommand), lAddress, sizeof(lAddress));
+        if ((1 == lRet) && (0 == strcmp("END", lCommand)))
+        {
+            break;
+        }
+
+        if (2 != lRet)
         {
             fprintf(stderr, "USER ERROR  Invalid command format\n");
             return __LINE__;
@@ -141,8 +147,7 @@ int ProcessFile(FILE* aFile)
             return __LINE__;
         }
 
-        if      (0 == strcmp("END" , lCommand)) { break; }
-        else if (0 == strcmp("GET" , lCommand)) { lResult = Get (lAddress, lFileName); }
+        if      (0 == strcmp("GET" , lCommand)) { lResult = Get (lAddress, lFileName); }
         else if (0 == strcmp("POST", lCommand)) { lResult = Post(lAddress, lFileName); }
         else
         {

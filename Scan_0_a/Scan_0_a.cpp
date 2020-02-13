@@ -110,7 +110,13 @@ int ProcessFile(FILE* aFile)
             return __LINE__;
         }
 
-        if (2 != sscanf(lLine, "%s %s", lCommand, lAddress))
+        int lRet = sscanf(lLine, "%s %s", lCommand, lAddress);
+        if ((1 == lRet) && (0 == strcmp("END", lCommand)))
+        {
+            break;
+        }
+
+        if (2 != lRet)
         {
             fprintf(stderr, "USER ERROR  Invalid command format\n");
             return __LINE__;
@@ -140,8 +146,7 @@ int ProcessFile(FILE* aFile)
             return __LINE__;
         }
 
-        if      (0 == strcmp("END" , lCommand)) { break; }
-        else if (0 == strcmp("GET" , lCommand)) { lResult = Get (lAddress, lFileName); }
+        if      (0 == strcmp("GET" , lCommand)) { lResult = Get (lAddress, lFileName); }
         else if (0 == strcmp("POST", lCommand)) { lResult = Post(lAddress, lFileName); }
         else
         {
