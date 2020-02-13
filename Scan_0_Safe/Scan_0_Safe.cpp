@@ -14,7 +14,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef _WIN32
+// ===== Common =============================================================
+#ifdef _WIN32
+    #include "../Common/LinuxOnWindows.h"
+#else
     #include "../Common/WindowsOnLinux.h"
 #endif
 
