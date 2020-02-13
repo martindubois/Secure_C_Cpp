@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef _WIN32
+    #include "../Common/WindowsOnLinux.h"
+#endif
+
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
@@ -111,7 +115,7 @@ int ProcessFile(FILE* aFile)
             return __LINE__;
         }
 
-        int lRet = sscanf_s(lLine, "%s %s", lCommand, sizeof(lCommand), lAddress, sizeof(lAddress));
+        int lRet = sscanf_s(lLine, "%s %s", lCommand SIZE_INFO( sizeof(lCommand) ), lAddress SIZE_INFO( sizeof(lAddress) ) );
         if ((1 == lRet) && (0 == strcmp("END", lCommand)))
         {
             break;
@@ -129,7 +133,7 @@ int ProcessFile(FILE* aFile)
             return __LINE__;
         }
 
-        if (1 != sscanf_s(lLine, "%s", lFileName, sizeof(lFileName)))
+        if (1 != sscanf_s(lLine, "%s", lFileName SIZE_INFO( sizeof(lFileName) ) ))
         {
             fprintf(stderr, "USER ERROR  No file name\n");
             return __LINE__;

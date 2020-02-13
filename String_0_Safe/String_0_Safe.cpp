@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef _WIN32
+    #include "../Common/WindowsOnLinux.h"
+#endif
+
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
@@ -46,21 +50,14 @@ int main(int aCount, const char** aVector)
     {
         char lPassword[8];
 
-        errno_t lErr = strcpy_s(lPassword, aVector[ARG_PASSWORD]);
-        if (0 == lErr)
+        strcpy_s(lPassword, aVector[ARG_PASSWORD]);
+        if (0 == strncmp(lPassword, lExpected, sizeof(lPassword)))
         {
-            if (0 == strncmp(lPassword, lExpected, sizeof(lPassword)))
-            {
-                printf("Hello %s\n\n", aVector[ARG_USER_NAME]);
-            }
-            else
-            {
-                fprintf(stderr, "USER ERROR  Sorry, this is not your password\n\n");
-            }
+            printf("Hello %s\n\n", aVector[ARG_USER_NAME]);
         }
         else
         {
-            fprintf(stderr, "USER ERROR  strcpy_s( ,  )  failed - %d\n", lErr);
+            fprintf(stderr, "USER ERROR  Sorry, this is not your password\n\n");
         }
     }
     else
@@ -81,12 +78,7 @@ bool RetrievePassword(const char* aUserName, char* aPassword, unsigned int aPass
     assert(NULL != aPassword         );
     assert(   0 <  aPasswordSize_byte);
 
-    errno_t lErr = strcpy_s(aPassword, aPasswordSize_byte, "Apple");
-    if (0 != lErr)
-    {
-        fprintf(stderr, "ERROR  strcpy_s( , )  failed - %d\n", lErr);
-        return false;
-    }
+    strcpy_s(aPassword SIZE_INFO( aPasswordSize_byte ), "Apple");
 
     return true;
 }

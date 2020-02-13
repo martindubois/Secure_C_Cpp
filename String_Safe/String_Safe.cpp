@@ -13,6 +13,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef _WIN32
+    #include "../Common/WindowsOnLinux.h"
+#endif
+
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +47,6 @@ int main()
 {
     printf("Example - String_Safe\n\n");
 
-    errno_t lErr;
     int     lRet;
 
     // #4 - Definint a local variable
@@ -78,19 +81,19 @@ int main()
 
     // #9 - strcpy - Copy a string
     // * strcpy_s returns the 0 on success
-    lErr = strcpy_s(lString, LEARNING_PATH);
+    strcpy_s(lString, LEARNING_PATH);
 
     // #10 - strncpy - A better way to copy string
     // - Can result in a non-terminated stirng!
-    lErr = strncpy_s(lShortAnswer, "abc", sizeof(lShortAnswer));
+    strncpy_s(lShortAnswer, "abc", sizeof(lShortAnswer));
 
     // Programmer should use strncpy this way!
     memset(&lShortAnswer, 0, sizeof(lShortAnswer));
-    lErr = strncpy_s(lShortAnswer, "abc", sizeof(lShortAnswer) - 1);
+    strncpy_s(lShortAnswer, "abc", sizeof(lShortAnswer) - 1);
 
     // #11 - strcat - Concaten strings
-    lErr = strcat_s(lString, " - " );
-    lErr = strcat_s(lString, COURSE);
+    strcat_s(lString, " - " );
+    strcat_s(lString, COURSE);
 
     return 0;
 }

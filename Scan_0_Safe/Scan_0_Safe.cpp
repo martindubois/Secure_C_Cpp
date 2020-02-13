@@ -14,6 +14,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef _WIN32
+    #include "../Common/WindowsOnLinux.h"
+#endif
+
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
@@ -102,7 +106,7 @@ int ProcessFile(FILE* aFile)
         char lCommand[8];
         char lFileName[64];
 
-        fscanf_s(aFile, "%s %s", lCommand, sizeof(lCommand), lAddress, sizeof(lAddress));
+        fscanf_s(aFile, "%s %s", lCommand SIZE_INFO( sizeof(lCommand) ), lAddress SIZE_INFO( sizeof(lAddress) ) );
 
         if (!ValidateAddress(lAddress))
         {
@@ -110,7 +114,7 @@ int ProcessFile(FILE* aFile)
             lResult = __LINE__;
         }
 
-        fscanf_s(aFile, "%s", lFileName, sizeof(lFileName));
+        fscanf_s(aFile, "%s", lFileName SIZE_INFO( sizeof(lFileName) ) );
 
         if (!ValidateFileName(lFileName))
         {

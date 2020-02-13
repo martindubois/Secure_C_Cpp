@@ -21,6 +21,8 @@
 
 typedef int SOCKET;
 
+typedef int errno_t;
+
 typedef sighandler_t _crt_signal_t;
 
 // Macros
@@ -33,4 +35,15 @@ typedef sighandler_t _crt_signal_t;
 
 #define _strdup strdup
 
-#define strcpy_s strcpy
+#define fscanf_s fscanf
+
+#define sscanf_s sscanf
+
+#define strcat_s  strcat
+#define strcpy_s  strcpy
+#define strncpy_s strncpy
+
+// Functions
+/////////////////////////////////////////////////////////////////////////////
+
+#define fopen_s(F,N,M) ( ( NULL != ( ( * (F) ) = fopen( (N), (M) ) ) ) ? 0 : -1 )
