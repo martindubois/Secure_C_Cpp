@@ -2,18 +2,18 @@
 // Author         Martin Dubois, P.Eng.
 // Learning path  Secure_C_Cpp
 // Course         05 - Random number generator
-// Video          02 - rand function
-// Example        Random_0
-// File           Random_0/Random_0.cpp
+// Video          03 - Better random
+// Example        Random_0_a
+// File           Random_0_a/Random_0_a.cpp
 
 // Includes
 /////////////////////////////////////////////////////////////////////////////
 
 // ===== C ==================================================================
 #include <assert.h>
+#include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+#include <unistd.h>
 
 // Constants
 /////////////////////////////////////////////////////////////////////////////
@@ -30,20 +30,34 @@ static void Display( const unsigned short * aIn, unsigned int aCount );
 
 int main()
 {
-    printf("Example - Random_0\n\n");
+    printf("Example - Random_0_a\n\n");
 
-    time_t lTime;
-
-    srand(static_cast<unsigned int>(time(&lTime)));
+    int lRandom = open( "/dev/random", O_RDONLY );
+    if ( 0 > lRandom )
+    {
+        fprintf( stderr, "FATAL ERROR  open(  )  failed - %d\n", lRandom );
+        return __LINE__;
+    }
 
     unsigned short lNumbers[ NUMBER_QTY ];
 
-    for (unsigned int i = 0; i < NUMBER_QTY; i++)
+    ssize_t lSize_byte = read(lRandom, lNumbers, sizeof(lNumbers));
+    if ( sizeof( lNumbers[ 0 ] ) <= lSize_byte)
     {
-        lNumbers[ i ] = rand();
+        unsigned int lCount = lSize_byte / sizeof( lNumbers[ 0 ] );
+
+        Display( lNumbers, lCount );
+    }
+    else
+    {
+        fprintf( stderr, "ERROR  read( , ,  )  failed - %ld\n", lSize_byte);
     }
 
-    Display( lNumbers, NUMBER_QTY );
+    int lRet = close(lRandom);
+    if ( 0 != lRet)
+    {
+        fprintf( stderr, "WARNING  close(  )  failed - %d\n", lRet);
+    }
 
 	return 0;
 }
