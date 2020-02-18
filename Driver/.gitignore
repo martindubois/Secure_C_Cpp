@@ -1,0 +1,16 @@
+
+# Author         Martin Dubois, P.Eng.
+# Learning path  Secure C/C++
+# Course         07 - Driver development
+# Video          03 - Read, Write and IoCtl
+# File           Driver/Device.c
+
+*.ko
+*.ko.cmd
+*.mod
+*.mod.c
+*.mod.cmd
+*.o.cmd
+
+/Module.symvers
+/modules.order
