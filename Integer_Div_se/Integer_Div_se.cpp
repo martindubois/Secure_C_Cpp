@@ -32,6 +32,7 @@ int main(int aCount, const char** aVector)
     if (ARG_QTY > aCount)
     {
         fprintf(stderr, "USER ERROR  Invalid command line\n");
+        fprintf(stderr, "Usage  Integer_Div_se {A} {B}\n");
         return __LINE__;
     }
 
