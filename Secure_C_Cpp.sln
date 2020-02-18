@@ -87,6 +87,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCP_Server_0", "TCP_Server_
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCP_Server_0_a", "TCP_Server_0_a\TCP_Server_0_a.vcxproj", "{55812305-A1C3-4709-A975-69C8DD9ED1ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AAE7BC36-DB96-4056-AB76-8551A91FFB76} = {AAE7BC36-DB96-4056-AB76-8551A91FFB76}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TCP_Server_0_b", "TCP_Server_0_b\TCP_Server_0_b.vcxproj", "{D255F9D9-18F4-4F79-B5A2-25246E7F6102}"
 EndProject
@@ -98,6 +101,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UDP_Server_0_a", "UDP_Serve
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UDP_Server_0_b", "UDP_Server_0_b\UDP_Server_0_b.vcxproj", "{5929E1FA-8F2B-4323-A29F-E599C8FA700A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{AAE7BC36-DB96-4056-AB76-8551A91FFB76} = {AAE7BC36-DB96-4056-AB76-8551A91FFB76}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Integer_Div_se", "Integer_Div_se\Integer_Div_se.vcxproj", "{D5255DC1-EB80-4A0E-88DF-750F6D7CA60B}"
 EndProject

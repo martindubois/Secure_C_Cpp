@@ -3,8 +3,8 @@
 // Learning path  Secure C/C++
 // Course         03 - C++ particularities
 // Video          07 - Socket
-// Example        TCP_Server_0
-// File           TCP_Server_0/TCP_Server_0.cpp
+// Example        TCP_Server_0_a
+// File           TCP_Server_0_a/TCP_Server_0_a.cpp
 
 // Includes
 /////////////////////////////////////////////////////////////////////////////
@@ -12,6 +12,7 @@
 // ===== C ==================================================================
 #include <assert.h>
 #include <stdio.h>
+
 #include <string.h>
 
 // ===== Common =============================================================
@@ -21,7 +22,7 @@
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-static int ProcessRequest          (SOCKET aSocket, const Protocol_Header & aHeader, const char * aData);
+static int ProcessRequest(SOCKET aSocket, const Protocol_Header& aHeader, const char* aData);
 static int ReceiveAndProcessRequest(SOCKET aSocket);
 
 static bool ValidateHeader(const Protocol_Header& aHeader);
@@ -31,7 +32,7 @@ static bool ValidateHeader(const Protocol_Header& aHeader);
 
 int main()
 {
-    printf("Example - TCP_Server_0\n\n");
+    printf("Example - TCP_Server_0_a\n\n");
 
     Socket_Startup();
 
@@ -85,10 +86,10 @@ int main()
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
-int ProcessRequest(SOCKET aSocket, const Protocol_Header & aHeader, const char * aData)
+int ProcessRequest(SOCKET aSocket, const Protocol_Header& aHeader, const char* aData)
 {
-    assert(INVALID_SOCKET !=   aSocket );
-    assert(NULL           != (&aHeader));
+    assert(INVALID_SOCKET != aSocket);
+    assert(NULL != (&aHeader));
 
     Protocol_Header lHeader = aHeader;
 
@@ -118,22 +119,27 @@ int ReceiveAndProcessRequest(SOCKET aSocket)
     sockaddr_in lAddr;
     socklen_t   lAddrSize_byte = sizeof(lAddr);
 
-    SOCKET lSocket = accept(aSocket, reinterpret_cast<sockaddr *>(&lAddr), &lAddrSize_byte);
+    SOCKET lSocket = accept(aSocket, reinterpret_cast<sockaddr*>(&lAddr), &lAddrSize_byte);
     if (INVALID_SOCKET == lSocket)
     {
         fprintf(stderr, "ERROR  accept( , ,  )  failed\n");
         return __LINE__;
     }
 
+    int lTimeout_ms = 1000;
+
+    int lRet = setsockopt(lSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&lTimeout_ms), sizeof(lTimeout_ms));
+    assert(0 == lRet);
+
     Protocol_Header lHeader;
     int             lResult = 0;
 
-    int lSize_byte = recv(lSocket, reinterpret_cast<char *>(&lHeader), sizeof(lHeader), 0);
+    int lSize_byte = recv(lSocket, reinterpret_cast<char*>(&lHeader), sizeof(lHeader), 0);
     if (sizeof(lHeader) == lSize_byte)
     {
         if (ValidateHeader(lHeader))
         {
-            char       * lData          = NULL;
+            char* lData = NULL;
             unsigned int lDataSize_byte = lHeader.mSize_byte - sizeof(Protocol_Header);
 
             if (0 < lDataSize_byte)
@@ -141,7 +147,7 @@ int ReceiveAndProcessRequest(SOCKET aSocket)
                 lData = new char[lDataSize_byte];
                 assert(NULL != lData);
 
-                lSize_byte = recv(lSocket, lData, lDataSize_byte, MSG_WAITALL);
+                lSize_byte = recv(lSocket, lData, lDataSize_byte, 0);
                 if (lDataSize_byte != lSize_byte)
                 {
                     fprintf(stderr, "REQUEST ERROR  Not enough data - %d bytes\n", lSize_byte);
