@@ -28,6 +28,7 @@ for i in BO_Dynamic BO_Global BO_Local \
          String String_Safe            \
          String_0 String_0_Safe        \
          String_STL                    \
+         SymLink_a                     \
          TCP_Hacker_0 TCP_Server_0     \
          UDP_Hacker_0 UDP_Server_0 UDP_Server_0_a
 do
