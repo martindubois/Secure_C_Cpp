@@ -37,7 +37,7 @@ static void Request(const char* aIn, unsigned int aInSize_byte, const sockaddr_i
 
 int main(int aCount, const char** aVector)
 {
-    printf("Example - TCP_Hacker_0_b\n\n");
+    printf("Example - TCP_Hacker_0\n\n");
 
     if (ARG_QTY > aCount)
     {
