@@ -49,6 +49,7 @@ int main(int aCount, const char** aVector)
     if (ARG_QTY > aCount)
     {
         fprintf(stderr, "USER ERROR  Invalid command line\n");
+        fprintf(stderr, "Usage  Scan_0_a_Safe {InputFileName}\n");
         return __LINE__;
     }
 

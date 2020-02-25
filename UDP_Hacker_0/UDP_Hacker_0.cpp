@@ -25,10 +25,11 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-#define ARG_ADDRESS (1)
-#define ARG_PORT    (2)
+#define ARG_ADDRESS  (1)
+#define ARG_PORT     (2)
+#define ARG_REQUESTS (3)
 
-#define ARG_QTY (3)
+#define ARG_QTY (4)
 
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
@@ -45,6 +46,9 @@ int main(int aCount, const char ** aVector)
     if (ARG_QTY > aCount)
     {
         fprintf(stderr, "USER ERROR  Invalid command line\n");
+        fprintf(stderr, "Usage  UDP_Hacker_0 {IP_Addr} {Port} {Requests}\n");
+        fprintf(stderr, "       S = Short request\n");
+        fprintf(stderr, "       V = Valid request\n");
         return __LINE__;
     }
 
@@ -67,25 +71,35 @@ int main(int aCount, const char ** aVector)
     char             lBuffer[64];
     Protocol_Header* lHeader = reinterpret_cast<Protocol_Header*>(lBuffer);
 
-    memset(&lBuffer, 0, sizeof(lBuffer));
+    if (NULL != strchr(aVector[ARG_REQUESTS], 'V'))
+    {
+        printf("Sending valid request...\n");
 
-    lHeader->mRequestCode = PROTOCOL_REQUEST_DO_NOTHING;
-    lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
-    lHeader->mSerial      = 1;
-    lHeader->mSize_byte   = sizeof(lBuffer);
+        memset(&lBuffer, 0, sizeof(lBuffer));
 
-    strcpy(lBuffer + sizeof(Protocol_Header), "Very important data 0123456789abcdefghijklmnopqrstuvwxy");
+        lHeader->mRequestCode = PROTOCOL_REQUEST_DO_NOTHING;
+        lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
+        lHeader->mSerial      = 1;
+        lHeader->mSize_byte   = sizeof(lBuffer);
 
-    Request(lBuffer, sizeof(lBuffer), lAddr);
+        strcpy(lBuffer + sizeof(Protocol_Header), "Very important data 0123456789abcdefghijklmnopqrstuvwxy");
 
-    memset(&lBuffer, 0, sizeof(lBuffer));
+        Request(lBuffer, sizeof(lBuffer), lAddr);
+    }
 
-    lHeader->mRequestCode = 99;
-    lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
-    lHeader->mSerial      = 1;
-    lHeader->mSize_byte   = 128;
+    if (NULL != strchr(aVector[ARG_REQUESTS], 'V'))
+    {
+        printf("Sending short request...\n");
 
-    Request(lBuffer, sizeof(Protocol_Header), lAddr);
+        memset(&lBuffer, 0, sizeof(lBuffer));
+
+        lHeader->mRequestCode = 99;
+        lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
+        lHeader->mSerial      = 1;
+        lHeader->mSize_byte   = 128;
+
+        Request(lBuffer, sizeof(Protocol_Header), lAddr);
+    }
 
     Socket_Cleanup();
 

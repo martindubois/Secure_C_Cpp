@@ -22,10 +22,11 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-#define ARG_ADDRESS (1)
-#define ARG_PORT    (2)
+#define ARG_ADDRESS  (1)
+#define ARG_PORT     (2)
+#define ARG_REQUESTS (3)
 
-#define ARG_QTY (3)
+#define ARG_QTY (4)
 
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
@@ -42,6 +43,10 @@ int main(int aCount, const char** aVector)
     if (ARG_QTY > aCount)
     {
         fprintf(stderr, "USER ERROR  Invalid command line\n");
+        fprintf(stderr, "Usage  TCP_Hacker_0 {IP_Addr} {Port} {Requests}\n");
+        fprintf(stderr, "       N = No request\n");
+        fprintf(stderr, "       S = Short request\n");
+        fprintf(stderr, "       V = Valid request\n");
         return __LINE__;
     }
 
@@ -64,25 +69,42 @@ int main(int aCount, const char** aVector)
     char             lBuffer[64];
     Protocol_Header* lHeader = reinterpret_cast<Protocol_Header*>(lBuffer);
 
-    memset(&lBuffer, 0, sizeof(lBuffer));
+    if (NULL != strchr(aVector[ARG_REQUESTS], 'V')) // V = Valid request
+    {
+        printf("Sending valid request...\n");
 
-    lHeader->mRequestCode = PROTOCOL_REQUEST_DO_NOTHING;
-    lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
-    lHeader->mSerial      = 1;
-    lHeader->mSize_byte   = sizeof(lBuffer);
+        memset(&lBuffer, 0, sizeof(lBuffer));
 
-    strcpy_s(lBuffer + sizeof(Protocol_Header) SIZE_INFO( sizeof(lBuffer) - sizeof(Protocol_Header) ), "Very important data 0123456789abcdefghijklmnopqrstuvwxy");
+        lHeader->mRequestCode = PROTOCOL_REQUEST_DO_NOTHING;
+        lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
+        lHeader->mSerial      = 1;
+        lHeader->mSize_byte   = sizeof(lBuffer);
 
-    Request(lBuffer, sizeof(lBuffer), lAddr);
+        strcpy_s(lBuffer + sizeof(Protocol_Header) SIZE_INFO( sizeof(lBuffer) - sizeof(Protocol_Header) ), "Very important data 0123456789abcdefghijklmnopqrstuvwxy");
 
-    memset(&lBuffer, 0, sizeof(lBuffer));
+        Request(lBuffer, sizeof(lBuffer), lAddr);
+    }
 
-    lHeader->mRequestCode =  99;
-    lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
-    lHeader->mSerial      =   1;
-    lHeader->mSize_byte   = 128;
+    if (NULL != strchr(aVector[ARG_REQUESTS], 'S')) // S = Short request
+    {
+        printf("Sending short request...\n");
 
-    Request(lBuffer, sizeof(Protocol_Header), lAddr);
+        memset(&lBuffer, 0, sizeof(lBuffer));
+
+        lHeader->mRequestCode =  99;
+        lHeader->mResultCode  = PROTOCOL_RESULT_REQUEST;
+        lHeader->mSerial      =   1;
+        lHeader->mSize_byte   = 128;
+
+        Request(lBuffer, sizeof(Protocol_Header), lAddr);
+    }
+
+    if (NULL != strchr(aVector[ARG_REQUESTS], 'N')) // N = No request
+    {
+        printf("Connecting without sending request...\n");
+
+        Request(NULL, 0, lAddr);
+    }
 
     Socket_Cleanup();
 
@@ -94,9 +116,7 @@ int main(int aCount, const char** aVector)
 
 void Request(const char* aIn, unsigned int aInSize_byte, const sockaddr_in& aAddr)
 {
-    assert(NULL !=   aIn         );
-    assert(0    <    aInSize_byte);
-    assert(NULL != (&aAddr)      );
+    assert(NULL != (&aAddr));
 
     SOCKET lSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     assert(INVALID_SOCKET != lSocket);
@@ -108,12 +128,22 @@ void Request(const char* aIn, unsigned int aInSize_byte, const sockaddr_in& aAdd
         return;
     }
 
-    lRet = send(lSocket, aIn, aInSize_byte, 0);
-    printf("sendto returned %d\n", lRet);
+    int lTimeout_ms = 60000;
+
+    lRet = setsockopt(lSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&lTimeout_ms), sizeof(lTimeout_ms));
+    assert(0 == lRet);
+
+    if (0 < aInSize_byte)
+    {
+        assert(NULL != aIn);
+
+        lRet = send(lSocket, aIn, aInSize_byte, 0);
+        printf("sendto returned %d\n", lRet);
+    }
 
     char lBuffer[1024];
 
-    lRet = recv(lSocket, lBuffer, sizeof(lBuffer), 0);
+    lRet = recv(lSocket, lBuffer, sizeof(lBuffer), MSG_WAITALL);
     printf("recv returned %d\n", lRet);
 
     if (lRet >= sizeof(Protocol_Header))

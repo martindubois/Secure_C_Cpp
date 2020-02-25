@@ -44,6 +44,7 @@ int main(int aCount, const char** aVector)
     if (ARG_QTY > aCount)
     {
         fprintf(stderr, "USER ERROR  Invalid command line\n");
+        fprintf(stderr, "Usage  String_0_Safe {UserName} {Password}\n");
         return __LINE__;
     }
 

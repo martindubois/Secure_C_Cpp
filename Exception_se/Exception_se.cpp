@@ -42,6 +42,9 @@ int main(int aCount, const char** aVector)
     if (ARG_QTY > aCount)
     {
         fprintf(stderr, "USER ERROR  Invalid command line\n");
+        fprintf(stderr, "Usage  Exception_se {ErrorType}\n");
+        fprintf(stderr, "       0 = Integer divid by 0\n");
+        fprintf(stderr, "       1 = Access violation\n");
         return __LINE__;
     }
 
