@@ -27,6 +27,9 @@
     // ===== System =========================================================
     #include <sys/stat.h>
 
+    // ===== Common =========================================================
+    #include "../Common/WindowsOnLinux.h"
+
 #endif
 
 // Data type
@@ -76,8 +79,6 @@ int main(int aCount, const char** aVector)
         fprintf(stderr, "Usage  SymLink_a {FileName}\n");
         return __LINE__;
     }
-
-    printf("\n");
 
     if ( ! ValidateFileName( aVector[ ARG_FILE_NAME ] ) )
     {
