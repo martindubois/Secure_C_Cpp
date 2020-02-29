@@ -14,11 +14,14 @@
 // Constnts
 /////////////////////////////////////////////////////////////////////////////
 
-#define INVALID_SOCKET (-1)
+#define INVALID_HANDLE_VALUE     (-1)
+#define INVALID_SET_FILE_POINTER (-1)
+#define INVALID_SOCKET           (-1)
 
 // Data type
 /////////////////////////////////////////////////////////////////////////////
 
+typedef int HANDLE;
 typedef int SOCKET;
 
 typedef int errno_t;

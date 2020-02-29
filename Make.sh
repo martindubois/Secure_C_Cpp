@@ -18,6 +18,7 @@ cd BaseLib
 cd ..
 
 for i in BO_Dynamic BO_Global BO_Local \
+         ClientList_0 ClientList_0_a   \
          DynamicMemory                 \
          Format_0 Format_0_Safe        \
          Integer_AddSub Integer_Size   \

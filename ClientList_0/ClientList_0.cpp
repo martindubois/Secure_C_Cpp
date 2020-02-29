@@ -15,14 +15,23 @@
 #include <stdio.h>
 
 #ifdef _WIN32
+
     // ===== Windows ========================================================
     #include <Windows.h>
 
     // ===== Common =========================================================
     #include "../Common/LinuxOnWindows.h"
+
 #else
+
+    #include <fcntl.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <unistd.h>
+
     // ===== Common =========================================================
     #include "../Common/WindowsOnLinux.h"
+
 #endif
 
 // Constants
@@ -36,16 +45,21 @@
 #define ARG_ADD_QTY    (5)
 #define ARG_REMOVE_QTY (3)
 
+#ifndef _WIN32
+    #define FILE_CURRENT (SEEK_CUR)
+    #define FILE_END     (SEEK_END)
+#endif
+
 #define RECORD_SIZE_byte (64)
 
 // Static function declaration
 /////////////////////////////////////////////////////////////////////////////
 
-static void Add_Abort(HANDLE aHandle, DWORD aOffset);
+static void Add_Abort(HANDLE aHandle, unsigned int aOffset);
 
 #ifndef _WIN32
     static bool     ReadFile      (int aHandle, void* aOut, unsigned int aOutSize_byte, unsigned int* aInfo_byte, void*);
-    static uint32_t SetFilePointer(int aHandle, uint32_t aOffset, uint32_t*, uint32_t aMode);
+    static uint32_t SetFilePointer(int aHandle, int aOffset, void*, int aMode);
     static bool     WriteFile     (int aHandle, const void* aIn, unsigned int aInSize_byte, unsigned int* aInfo_byte, void*);
 #endif
 
@@ -64,7 +78,7 @@ int main(int aCount, const char** aVector)
     {
         fprintf(stderr, "USER ERROR  Invalid command\n");
         fprintf(stderr, "Usage  ClientList_0 ADD {Id} {Addr} {Freq}\n");
-        fprintf(stderr, "                    REMOVE { Id }");
+        fprintf(stderr, "                    REMOVE { Id }\n");
         return __LINE__;
     }
 
@@ -78,7 +92,7 @@ int main(int aCount, const char** aVector)
             return __LINE__;
         }
     #else
-        lHandle = open("Data.bin");
+        lHandle = open("Data.bin", O_RDWR | O_CREAT, 0600);
         if (0 > lHandle)
         {
             fprintf(stderr, "ERROR  open(  )  failed - %d\n", lHandle);
@@ -108,19 +122,30 @@ int main(int aCount, const char** aVector)
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
-void Add_Abort(HANDLE aHandle, DWORD aOffset)
+void Add_Abort(HANDLE aHandle, unsigned int aOffset)
 {
     assert(INVALID_HANDLE_VALUE != aHandle);
 
-    DWORD lOffset = SetFilePointer(aHandle, aOffset, NULL, FILE_BEGIN);
-    assert(aOffset == lOffset);
+    #ifdef _WIN32
 
-    BOOL lRetB = SetEndOfFile(aHandle);
-    assert(lRetB);
+        DWORD lOffset = SetFilePointer(aHandle, aOffset, NULL, FILE_BEGIN);
+        assert(aOffset == lOffset);
+
+        BOOL lRetB = SetEndOfFile(aHandle);
+        assert(lRetB);
+
+    #else
+
+        int lRet = ftruncate(aHandle, aOffset);
+        assert(0 == lRet);
+
+    #endif
 }
 
 #ifndef _WIN32
 
+    // aOut       [---;-W-]
+    // aInfo_byte [---;-W-]
     bool ReadFile(int aHandle, void* aOut, unsigned int aOutSize_byte, unsigned int* aInfo_byte, void*)
     {
         assert(INVALID_HANDLE_VALUE != aHandle      );
@@ -128,14 +153,28 @@ void Add_Abort(HANDLE aHandle, DWORD aOffset)
         assert(0                    <  aOutSize_byte);
         assert(NULL                 != aInfo_byte   );
 
+        ssize_t lSize_byte = read(aHandle, aOut, aOutSize_byte);
+        if (0 >= lSize_byte)
+        {
+            return false;
+        }
+
+        assert(aOutSize_byte >= lSize_byte);
+
+        *aInfo_byte = lSize_byte;
+
+        return true;
     }
 
-    uint32_t SetFilePointer(int aHandle, uint32_t aOffset, uint32_t*, uint32_t aMode)
+    uint32_t SetFilePointer(int aHandle, int aOffset, void*, int aMode)
     {
         assert(INVALID_HANDLE_VALUE != aHandle);
 
+        return lseek(aHandle, aOffset, aMode);
     }
 
+    // aIn        [---;R--]
+    // aInfo_byte [---;-W-]
     bool WriteFile(int aHandle, const void* aIn, unsigned int aInSize_byte, unsigned int* aInfo_byte, void*)
     {
         assert(INVALID_HANDLE_VALUE != aHandle     );
@@ -143,11 +182,23 @@ void Add_Abort(HANDLE aHandle, DWORD aOffset)
         assert(                   0 <  aInSize_byte);
         assert(NULL                 != aInfo_byte  );
 
+        ssize_t lSize_byte = write(aHandle, aIn, aInSize_byte);
+        if (0 >= lSize_byte)
+        {
+            return false;
+        }
+
+        assert(aInSize_byte >= lSize_byte);
+
+        *aInfo_byte = lSize_byte;
+
+        return true;
     }
 
 #endif
 
 // ===== Commands ===========================================================
+// aVector [---;R--]
 
 int Add(HANDLE aHandle, int aCount, const char** aVector)
 {
@@ -155,7 +206,7 @@ int Add(HANDLE aHandle, int aCount, const char** aVector)
     assert(ARG_CMD              <= aCount );
     assert(NULL                 != aVector);
 
-    if (ARG_REMOVE_QTY != aCount)
+    if (ARG_ADD_QTY != aCount)
     {
         fprintf(stderr, "USER ERROR  Invalid command line\n");
         fprintf(stderr, "Usage  ClientList_0 ADD {Id} {Addr} {Freq}\n");
@@ -169,14 +220,14 @@ int Add(HANDLE aHandle, int aCount, const char** aVector)
     uint32_t lFreq = strtoul(aVector[ARG_FREQ], NULL, 10);
     uint32_t lId   = strtoul(aVector[ARG_ID  ], NULL, 10);
 
-    DWORD lOffset = SetFilePointer(aHandle, 0, NULL, FILE_END);
+    unsigned int lOffset = SetFilePointer(aHandle, 0, NULL, FILE_END);
     if (INVALID_SET_FILE_POINTER == lOffset)
     {
         fprintf(stderr, "ERROR  SetFilePointer( , , ,  )  failed\n");
         return __LINE__;
     }
 
-    DWORD lInfo_byte;
+    unsigned int lInfo_byte;
 
     if (!WriteFile(aHandle, &lId, sizeof(lId), &lInfo_byte, NULL))
     {
@@ -191,25 +242,38 @@ int Add(HANDLE aHandle, int aCount, const char** aVector)
 
     strncpy_s(lAddr, aVector[ARG_ADDR], sizeof(lAddr) - 1);
 
-    if (!WriteFile(aHandle, &lAddr, sizeof(lAddr), &lInfo_byte, NULL))
+    int lResult;
+
+    if (WriteFile(aHandle, &lAddr, sizeof(lAddr), &lInfo_byte, NULL))
+    {
+        assert(sizeof(lAddr) == lInfo_byte);
+
+        uint16_t lPeriod_min = 24 * 60 / lFreq;
+
+        if (WriteFile(aHandle, &lPeriod_min, sizeof(lPeriod_min), &lInfo_byte, NULL))
+        {
+            assert(sizeof(lPeriod_min) == lInfo_byte);
+
+            lResult = 0;
+        }
+        else
+        {
+            fprintf(stderr, "ERROR  WriteFile( , , , ,  )  failed\n");
+            lResult = __LINE__;
+        }
+    }
+    else
     {
         fprintf(stderr, "ERROR  WriteFile( , , , ,  )  failed");
-        Add_Abort(aHandle, lOffset);
-        return __LINE__;
+        lResult = __LINE__;
     }
-    assert(sizeof(lAddr) == lInfo_byte);
 
-    uint16_t lPeriod_min = 24 * 60 / lFreq;
-
-    if (!WriteFile(aHandle, &lPeriod_min, sizeof(lPeriod_min), &lInfo_byte, NULL))
+    if (0 != lResult)
     {
-        fprintf(stderr, "ERROR  WriteFile( , , , ,  )  failed\n");
         Add_Abort(aHandle, lOffset);
-        return __LINE__;
     }
-    assert(sizeof(lPeriod_min) == lInfo_byte);
 
-    return 0;
+    return lResult;
 }
 
 int Remove(HANDLE aHandle, int aCount, const char** aVector)
@@ -227,20 +291,24 @@ int Remove(HANDLE aHandle, int aCount, const char** aVector)
 
     for (;;)
     {
-        uint32_t lReadId;
-        DWORD    lInfo_byte;
+        uint32_t     lReadId;
+        unsigned int lInfo_byte;
 
         if (!ReadFile(aHandle, &lReadId, sizeof(lReadId), &lInfo_byte, NULL))
         {
-            fprintf(stderr, "ERROR  ReadFile( , , , ,  )  failed\n");
+            fprintf(stderr, "ERROR  Id not found\n");
             return __LINE__;
         }
 
         if (lId == lReadId)
         {
-            if (INVALID_SET_FILE_POINTER == SetFilePointer(aHandle, 0 - sizeof(uint32_t), NULL, FILE_CURRENT))
+            int lOffset = 0;
+
+            lOffset -= sizeof(uint32_t);
+
+            if (INVALID_SET_FILE_POINTER == SetFilePointer(aHandle, lOffset, NULL, FILE_CURRENT))
             {
-                fprintf(stderr, "ERROR  SetFilePointer( , , ,  )  failed\n");
+                fprintf(stderr, "FATAL ERROR  SetFilePointer( , , ,  )  failed\n");
                 return __LINE__;
             }
 
@@ -248,11 +316,17 @@ int Remove(HANDLE aHandle, int aCount, const char** aVector)
 
             if (!WriteFile(aHandle, &lWriteId, sizeof(lWriteId), &lInfo_byte, NULL))
             {
-                fprintf(stderr, "ERROR  WriteFile( , , , ,  )  failed\n");
+                fprintf(stderr, "FATAL ERROR  WriteFile( , , , ,  )  failed\n");
                 return __LINE__;
             }
 
             break;
+        }
+
+        if (INVALID_SET_FILE_POINTER == SetFilePointer( aHandle, RECORD_SIZE_byte - sizeof(uint32_t), NULL, FILE_CURRENT))
+        {
+            fprintf(stderr, "FATAL ERROR  SetFilePointer( , , ,  )  failed\n");
+            return __LINE__;
         }
     }
 
