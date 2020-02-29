@@ -127,6 +127,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{65891C98-947C-4D8B-9EAD-032A129912A4}"
 	ProjectSection(SolutionItems) = preProject
 		Common\Dump.h = Common\Dump.h
+		Common\FileFormat.h = Common\FileFormat.h
 		Common\LinuxOnWindows.h = Common\LinuxOnWindows.h
 		Common\Protocol.h = Common\Protocol.h
 		Common\Socket.h = Common\Socket.h
