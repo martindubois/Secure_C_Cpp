@@ -227,7 +227,7 @@ int Add(HANDLE aHandle, int aCount, const char** aVector)
         return __LINE__;
     }
 
-    unsigned int lInfo_byte;
+    DWORD lInfo_byte;
 
     if (!WriteFile(aHandle, &lId, sizeof(lId), &lInfo_byte, NULL))
     {
@@ -291,10 +291,11 @@ int Remove(HANDLE aHandle, int aCount, const char** aVector)
 
     for (;;)
     {
-        uint32_t     lReadId;
-        unsigned int lInfo_byte;
+        uint32_t lReadId;
+        DWORD    lInfo_byte;
 
-        if (!ReadFile(aHandle, &lReadId, sizeof(lReadId), &lInfo_byte, NULL))
+        if (   (!ReadFile(aHandle, &lReadId, sizeof(lReadId), &lInfo_byte, NULL))
+            || (sizeof(lReadId) != lInfo_byte))
         {
             fprintf(stderr, "ERROR  Id not found\n");
             return __LINE__;

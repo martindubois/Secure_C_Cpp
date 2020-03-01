@@ -28,6 +28,8 @@ typedef int errno_t;
 
 typedef sighandler_t _crt_signal_t;
 
+typedef unsigned int DWORD;
+
 // Macros
 /////////////////////////////////////////////////////////////////////////////
 
