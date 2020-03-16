@@ -147,7 +147,7 @@ int ReceiveAndProcessRequest(SOCKET aSocket)
                 lData = new char[lDataSize_byte];
                 assert(NULL != lData);
 
-                lSize_byte = recv(lSocket, lData, lDataSize_byte, 0);
+                lSize_byte = recv(lSocket, lData, lDataSize_byte, MSG_WAITALL);
                 if (lDataSize_byte != lSize_byte)
                 {
                     fprintf(stderr, "REQUEST ERROR  Not enough data - %d bytes\n", lSize_byte);
