@@ -97,7 +97,7 @@ int main()
 
         printf("The server listen on port %u\n", ntohs(lAddr.sin_port));
 
-        while ((0 == lResult) && ((STATE_INIT == sState) || (STATE_WAITING == sState)))
+        while ((0 == lResult) && ((STATE_INIT == sState) || (STATE_EXECUTING == sState)))
         {
             lResult = ReceiveAndProcessRequest(sSocket);
         }
@@ -216,10 +216,15 @@ void SignalHandler(int aSignal)
     switch (sState)
     {
     case STATE_EXECUTING: sState = STATE_COMPLETING; break;
+    case STATE_INIT     : sState = STATE_STOPPED   ; break;
 
-    case STATE_INIT: sState = STATE_STOPPED; break;
-
-    case STATE_WAITING: sState = STATE_STOPPED; Socket_Close(sSocket); sSocket = INVALID_SOCKET; break;
+    case STATE_WAITING  :
+        sState = STATE_STOPPED;
+        SOCKET lSocket;
+        lSocket = sSocket;
+        sSocket = INVALID_SOCKET;
+        Socket_Close(lSocket);
+        break;
 
     default: assert(false);
     }
