@@ -22,6 +22,20 @@
 
 #define ARG_QTY (3)
 
+// Class definition
+/////////////////////////////////////////////////////////////////////////////
+
+class Test
+{
+
+public:
+
+    Test();
+
+    ~Test();
+
+};
+
 // Entry point
 /////////////////////////////////////////////////////////////////////////////
 
@@ -41,6 +55,8 @@ int main(int aCount, const char** aVector)
 
     __try
     {
+        // Test lTest;
+
         int lR = lA / lB;
 
         printf("%d / %d = %d\n", lA, lB, lR);
@@ -51,4 +67,17 @@ int main(int aCount, const char** aVector)
     }
 
     return 0;
+}
+
+// Public
+/////////////////////////////////////////////////////////////////////////////
+
+Test::Test()
+{
+    printf("Test::Test()\n");
+}
+
+Test::~Test()
+{
+    printf("Test::~Test()\n");
 }
