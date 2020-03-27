@@ -128,9 +128,21 @@ void Request(const char* aIn, unsigned int aInSize_byte, const sockaddr_in& aAdd
         return;
     }
 
-    int lTimeout_ms = 60000;
+    #ifdef _WIN32
 
-    lRet = setsockopt(lSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&lTimeout_ms), sizeof(lTimeout_ms));
+        int lTimeout = 60000; // ms
+
+    #else
+
+        struct timeval lTimeout;
+
+        memset(&lTimeout, 0, sizeof(lTimeout));
+
+        lTimeout.tv_sec = 60;
+
+    #endif
+
+    lRet = setsockopt(lSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&lTimeout), sizeof(lTimeout));
     assert(0 == lRet);
 
     if (0 < aInSize_byte)
