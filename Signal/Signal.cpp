@@ -24,11 +24,33 @@
     #include "../Common/WindowsOnLinux.h"
 #endif
 
+// Data type
+/////////////////////////////////////////////////////////////////////////////
+
+//           +--> STOPPED <--+
+//           |               |
+//           |   +--> COMPLETING <--+
+//           |   |                  |
+// INIT --> WAITING <--+            |
+//               |     |            |
+//               +--> EXECUTING ----+
+typedef enum
+{
+    STATE_INIT,
+
+    STATE_ABORTING  ,
+    STATE_COMPLETING,
+    STATE_EXECUTING ,
+    STATE_STOPPED   ,
+    STATE_WAITING   ,
+}
+State;
+
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
 
-static SOCKET sSocket = INVALID_SOCKET;
-static bool   sStop   = false;
+static volatile SOCKET sSocket = INVALID_SOCKET;
+static volatile State  sState  = STATE_INIT;
 
 // Static function declaration
 /////////////////////////////////////////////////////////////////////////////
@@ -75,13 +97,12 @@ int main()
 
         printf("The server listen on port %u\n", ntohs(lAddr.sin_port));
 
-        do
+        while ((0 == lResult) && ((STATE_INIT == sState) || (STATE_EXECUTING == sState)))
         {
             lResult = ReceiveAndProcessRequest(sSocket);
         }
-        while ((0 == lResult) && (!sStop));
 
-        if (!sStop)
+        if (INVALID_SOCKET != sSocket)
         {
             Socket_Close(sSocket);
         }
@@ -135,12 +156,36 @@ int ReceiveAndProcessRequest(SOCKET aSocket)
     socklen_t        lAddrSize_byte = sizeof(lAddr);
     char             lBuffer[1024];
     Protocol_Header* lHeader = reinterpret_cast<Protocol_Header*>(lBuffer);
+    int              lSize_byte;
 
-    int lSize_byte = recvfrom(aSocket, lBuffer, sizeof(lBuffer), 0, reinterpret_cast<sockaddr*>(&lAddr), &lAddrSize_byte);
-    if (sStop)
+    // POSSIBLE RACE CONDITION  In a real program, we need to verify sState
+    //                          and set it at the same time or while holding
+    //                          a gate protecting the variable.
+    switch (sState)
     {
-        return 0;
+    case STATE_INIT     :
+    case STATE_EXECUTING:
+        sState = STATE_WAITING; break;
+
+    case STATE_STOPPED: return 0;
+
+    default: assert(false);
     }
+
+    lSize_byte = recvfrom(aSocket, lBuffer, sizeof(lBuffer), 0, reinterpret_cast<sockaddr*>(&lAddr), &lAddrSize_byte);
+
+    // POSSIBLE RACE CONDITION  In a real program, we need to verify sState
+    //                          and set it at the same time or while holding
+    //                          a gate protecting the variable.
+    switch(sState)
+    {
+    case STATE_STOPPED: return 0;
+
+    case STATE_WAITING: sState = STATE_EXECUTING; break;
+
+    default: assert(false);
+    }
+
     if ((0 >= lSize_byte) || (sizeof(lBuffer) < lSize_byte))
     {
         fprintf(stderr, "ERROR  recvfrom( , , , , ,  )  failed - %d\n", lSize_byte);
@@ -154,17 +199,33 @@ void SignalHandler(int aSignal)
 {
     switch (aSignal)
     {
+    case SIGINT : printf("SIGNAL  SIGINT\n" ); break;
+    case SIGTERM: printf("SIGNAL  SIGTERM\n"); break;
+
     case SIGABRT: fprintf(stderr, "SIGNAL  SIGABRT\n"); exit(__LINE__);
     case SIGFPE : fprintf(stderr, "SIGNAL  SIGFPE\n" ); exit(__LINE__);
     case SIGILL : fprintf(stderr, "SIGNAL  SIGILL\n" ); exit(__LINE__);
-    case SIGINT : printf("SIGNAL  SIGINT\n" ); break;
     case SIGSEGV: fprintf(stderr, "SIGNAL  SIGEGV\n" ); exit(__LINE__);
-    case SIGTERM: printf("SIGNAL  SIGTERM\n"); break;
 
     default: fprintf(stderr, "SIGNAL  Unknown\n"); exit(__LINE__);
     }
 
-    sStop = true;
+    // POSSIBLE RACE CONTITION  In a real program, we need to verify sState
+    //                          and set it at the same time or while holding
+    //                          a gate protecting both variables.
+    switch (sState)
+    {
+    case STATE_EXECUTING: sState = STATE_COMPLETING; break;
+    case STATE_INIT     : sState = STATE_STOPPED   ; break;
 
-    Socket_Close(sSocket);
+    case STATE_WAITING  :
+        sState = STATE_STOPPED;
+        SOCKET lSocket;
+        lSocket = sSocket;
+        sSocket = INVALID_SOCKET;
+        Socket_Close(lSocket);
+        break;
+
+    default: assert(false);
+    }
 }
