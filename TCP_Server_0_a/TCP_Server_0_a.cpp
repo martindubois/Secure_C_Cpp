@@ -126,9 +126,21 @@ int ReceiveAndProcessRequest(SOCKET aSocket)
         return __LINE__;
     }
 
-    int lTimeout_ms = 1000;
+    #ifdef _WIN32
 
-    int lRet = setsockopt(lSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&lTimeout_ms), sizeof(lTimeout_ms));
+        int lTimeout = 1000; // ms
+
+    #else
+
+        struct timeval lTimeout;
+
+        memset(&lTimeout, 0, sizeof(lTimeout));
+
+        lTimeout.tv_sec = 1;
+
+    #endif
+
+    int lRet = setsockopt(lSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&lTimeout), sizeof(lTimeout));
     assert(0 == lRet);
 
     Protocol_Header lHeader;
